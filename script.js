@@ -297,15 +297,46 @@
     render();
   }
 
+  // OAuth 리다이렉트로 돌아왔을 때 URL(쿼리·해시)에 담긴 에러를 표면화
+  function readAuthError() {
+    const sources = [
+      new URLSearchParams(window.location.search),
+      new URLSearchParams(window.location.hash.replace(/^#/, "")),
+    ];
+    for (const p of sources) {
+      const err = p.get("error") || p.get("error_code");
+      if (err) {
+        return p.get("error_description") || err;
+      }
+    }
+    return null;
+  }
+
   db.auth.onAuthStateChange(async (event, session) => {
+    console.log("[auth]", event, session ? "session O" : "session X");
     if (event === "INITIAL_SESSION") return; // 아래 getSession에서 처리
     if (session) await loadBoard(session);
     else showLoggedOut();
   });
 
   (async () => {
-    const { data } = await db.auth.getSession();
-    if (data.session) await loadBoard(data.session);
-    else showLoggedOut();
+    const urlError = readAuthError();
+    if (urlError) {
+      console.error("OAuth 리다이렉트 에러:", urlError);
+      authMessage.textContent = "로그인 실패: " + urlError;
+      authMessage.className = "auth-message auth-message--error";
+    }
+
+    const { data, error } = await db.auth.getSession();
+    if (error) console.error("세션 조회 실패:", error);
+    if (data.session) {
+      // 토큰/code가 붙은 URL을 깨끗하게 정리
+      if (window.location.search || window.location.hash) {
+        history.replaceState(null, "", REDIRECT_URL);
+      }
+      await loadBoard(data.session);
+    } else {
+      showLoggedOut();
+    }
   })();
 })();
