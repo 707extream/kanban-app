@@ -10,11 +10,24 @@
 </head>
 <body>
   <header class="app-header">
-    <h1>📋 칸반 보드</h1>
-    <p class="subtitle">카드를 드래그해서 컬럼 사이로 옮겨보세요</p>
-    <div class="user-area" id="user-area" hidden>
-      <span class="user-email" id="user-email"></span>
-      <button type="button" id="logout-btn" class="logout-btn">로그아웃</button>
+    <div class="header-top">
+      <h1>📋 칸반 보드</h1>
+      <div class="user-area" id="user-area" hidden>
+        <span class="user-email" id="user-email"></span>
+        <button type="button" id="logout-btn" class="logout-btn">로그아웃</button>
+      </div>
+    </div>
+
+    <!-- 보드 툴바 (로그인 후 표시) -->
+    <div class="board-toolbar" id="board-toolbar" hidden>
+      <label class="toolbar-field">
+        보드
+        <select id="board-select" aria-label="보드 선택"></select>
+      </label>
+      <button type="button" class="tb-btn" id="new-board-btn">＋ 새 보드</button>
+      <button type="button" class="tb-btn" id="join-board-btn">🔑 코드로 참여</button>
+      <button type="button" class="tb-btn tb-btn--accent" id="share-btn">👥 공유</button>
+      <button type="button" class="tb-btn" id="toggle-activity-btn">🕘 활동 로그</button>
     </div>
   </header>
 
@@ -41,44 +54,145 @@
     </div>
   </section>
 
-  <!-- 보드 뷰 -->
-  <main class="board" id="app-view" hidden>
-    <section class="column" data-column="todo">
-      <header class="column-header">
-        <h2>To-Do</h2>
-        <span class="count" data-count>0</span>
-      </header>
-      <div class="cards" data-cards></div>
-      <form class="add-form" data-add-form>
-        <input type="text" placeholder="새 카드 추가…" data-add-input aria-label="To-Do에 카드 추가" />
-        <button type="submit" aria-label="추가">＋</button>
-      </form>
-    </section>
+  <!-- 보드 + 활동로그 레이아웃 -->
+  <div class="layout" id="app-view" hidden>
+    <main class="board">
+      <section class="column" data-column="todo">
+        <header class="column-header">
+          <h2>To-Do</h2>
+          <span class="count" data-count>0</span>
+        </header>
+        <div class="cards" data-cards></div>
+        <form class="add-form" data-add-form>
+          <input type="text" placeholder="새 카드 추가…" data-add-input aria-label="To-Do에 카드 추가" />
+          <button type="submit" aria-label="추가">＋</button>
+        </form>
+      </section>
 
-    <section class="column" data-column="in-progress">
-      <header class="column-header">
-        <h2>In-Progress</h2>
-        <span class="count" data-count>0</span>
-      </header>
-      <div class="cards" data-cards></div>
-      <form class="add-form" data-add-form>
-        <input type="text" placeholder="새 카드 추가…" data-add-input aria-label="In-Progress에 카드 추가" />
-        <button type="submit" aria-label="추가">＋</button>
-      </form>
-    </section>
+      <section class="column" data-column="in-progress">
+        <header class="column-header">
+          <h2>In-Progress</h2>
+          <span class="count" data-count>0</span>
+        </header>
+        <div class="cards" data-cards></div>
+        <form class="add-form" data-add-form>
+          <input type="text" placeholder="새 카드 추가…" data-add-input aria-label="In-Progress에 카드 추가" />
+          <button type="submit" aria-label="추가">＋</button>
+        </form>
+      </section>
 
-    <section class="column" data-column="done">
-      <header class="column-header">
-        <h2>Done</h2>
-        <span class="count" data-count>0</span>
+      <section class="column" data-column="done">
+        <header class="column-header">
+          <h2>Done</h2>
+          <span class="count" data-count>0</span>
+        </header>
+        <div class="cards" data-cards></div>
+        <form class="add-form" data-add-form>
+          <input type="text" placeholder="새 카드 추가…" data-add-input aria-label="Done에 카드 추가" />
+          <button type="submit" aria-label="추가">＋</button>
+        </form>
+      </section>
+    </main>
+
+    <!-- 활동 로그 패널 -->
+    <aside class="activity-panel" id="activity-panel" hidden>
+      <header class="activity-header">
+        <h3>🕘 활동 로그</h3>
+        <button type="button" class="icon-btn" id="close-activity-btn" aria-label="닫기">×</button>
       </header>
-      <div class="cards" data-cards></div>
-      <form class="add-form" data-add-form>
-        <input type="text" placeholder="새 카드 추가…" data-add-input aria-label="Done에 카드 추가" />
-        <button type="submit" aria-label="추가">＋</button>
+      <ul class="activity-list" id="activity-list"></ul>
+    </aside>
+  </div>
+
+  <!-- ===== 카드 편집 모달 ===== -->
+  <div class="modal-backdrop" id="card-modal" hidden>
+    <div class="modal">
+      <header class="modal-header">
+        <h3>카드 편집</h3>
+        <button type="button" class="icon-btn" data-close-modal aria-label="닫기">×</button>
+      </header>
+      <form id="card-form" class="modal-body">
+        <label class="field">
+          내용
+          <input type="text" id="card-text" required />
+        </label>
+        <div class="field-row">
+          <label class="field">
+            우선순위
+            <select id="card-priority">
+              <option value="low">낮음</option>
+              <option value="medium">보통</option>
+              <option value="high">높음</option>
+            </select>
+          </label>
+          <label class="field">
+            마감일
+            <input type="date" id="card-due" />
+          </label>
+        </div>
+        <label class="field">
+          태그 (쉼표로 구분)
+          <input type="text" id="card-tags" placeholder="예: 디자인, 긴급" />
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" data-close-modal>취소</button>
+          <button type="submit" class="btn-primary">저장</button>
+        </div>
       </form>
-    </section>
-  </main>
+    </div>
+  </div>
+
+  <!-- ===== 공유 모달 ===== -->
+  <div class="modal-backdrop" id="share-modal" hidden>
+    <div class="modal">
+      <header class="modal-header">
+        <h3>👥 보드 공유</h3>
+        <button type="button" class="icon-btn" data-close-modal aria-label="닫기">×</button>
+      </header>
+      <div class="modal-body">
+        <label class="field">
+          초대 코드 (팀원에게 전달)
+          <div class="code-row">
+            <input type="text" id="invite-code" readonly />
+            <button type="button" class="btn-ghost" id="copy-code-btn">복사</button>
+          </div>
+        </label>
+        <form id="invite-form" class="field">
+          이메일로 초대 (가입한 사용자만)
+          <div class="code-row">
+            <input type="email" id="invite-email" placeholder="teammate@example.com" />
+            <button type="submit" class="btn-primary">초대</button>
+          </div>
+        </form>
+        <p class="modal-message" id="share-message"></p>
+        <div class="members">
+          <h4>멤버</h4>
+          <ul id="member-list"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 참여(코드 입력) 모달 ===== -->
+  <div class="modal-backdrop" id="join-modal" hidden>
+    <div class="modal">
+      <header class="modal-header">
+        <h3>🔑 초대 코드로 참여</h3>
+        <button type="button" class="icon-btn" data-close-modal aria-label="닫기">×</button>
+      </header>
+      <form id="join-form" class="modal-body">
+        <label class="field">
+          초대 코드
+          <input type="text" id="join-code" placeholder="예: A1B2C3D4" required />
+        </label>
+        <p class="modal-message" id="join-message"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" data-close-modal>취소</button>
+          <button type="submit" class="btn-primary">참여</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>
