@@ -4,6 +4,11 @@
   padding: 0;
 }
 
+/* hidden 속성이 항상 우선하도록 강제 (아래 .board/.auth-view 등의 display:flex가 덮어쓰지 않게) */
+[hidden] {
+  display: none !important;
+}
+
 :root {
   /* 파스텔 베이스 */
   --bg: linear-gradient(135deg, #fdf2f8 0%, #eef2ff 50%, #ecfeff 100%);
