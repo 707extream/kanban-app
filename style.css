@@ -747,6 +747,29 @@ body {
   padding: 7px 10px;
 }
 
+/* 토스트 알림 */
+.app-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  background: #4b4357;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  max-width: 90vw;
+  box-shadow: 0 6px 24px rgba(75, 67, 87, 0.35);
+  z-index: 200;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.app-toast--error {
+  background: #d05a5a;
+}
+
 /* 반응형: 좁은 화면에서 활동패널을 보드 아래로 */
 @media (max-width: 1000px) {
   .layout {

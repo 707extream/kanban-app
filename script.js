@@ -171,10 +171,14 @@
       .insert({ name: name.trim() || "새 보드" })
       .select()
       .single();
-    if (error) return alert("보드 생성 실패: " + error.message);
+    if (error) {
+      console.error("보드 생성 실패:", error);
+      return toast("보드 생성 실패: " + error.message + " — DB 설정(§1-B SQL)을 실행했는지 확인하세요.", true);
+    }
     boards.push(data);
     renderBoardSelect();
     await switchBoard(data.id);
+    toast("새 보드를 만들었어요.");
   });
 
   /* ===================== 데이터: 카드 ===================== */
@@ -200,7 +204,7 @@
       .single();
     if (error) {
       console.error("추가 실패:", error);
-      alert("추가에 실패했습니다. (콘솔 확인)");
+      toast("카드 추가 실패: " + error.message, true);
       return null;
     }
     logActivity("추가", `"${text}" (${columnLabel(columnName)})`);
@@ -511,7 +515,10 @@
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const text = input.value.trim();
-      if (!text || !currentBoardId) return;
+      if (!text) return;
+      if (!currentBoardId) {
+        return toast("보드가 없습니다. DB 설정(§1-B SQL) 실행 여부를 확인하세요.", true);
+      }
       input.value = "";
       const saved = await insertCard(text, col.dataset.column);
       if (saved) {
@@ -676,6 +683,20 @@
   }
 
   /* ===================== 유틸 ===================== */
+  let toastEl = null;
+  function toast(msg, isError) {
+    if (!toastEl) {
+      toastEl = document.createElement("div");
+      toastEl.className = "app-toast";
+      document.body.appendChild(toastEl);
+    }
+    toastEl.textContent = msg;
+    toastEl.className = "app-toast" + (isError ? " app-toast--error" : "");
+    toastEl.style.opacity = "1";
+    clearTimeout(toastEl._t);
+    toastEl._t = setTimeout(() => (toastEl.style.opacity = "0"), isError ? 7000 : 3000);
+  }
+
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, (c) =>
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
@@ -699,11 +720,18 @@
     showLoggedIn(session);
     // 기본 보드 확보(없으면 생성 + 기존 카드 이관)
     const { data: defaultId, error } = await db.rpc("get_or_create_default_board");
-    if (error) console.error("기본 보드 확보 실패:", error);
+    if (error) {
+      console.error("기본 보드 확보 실패:", error);
+      toast(
+        "DB 설정이 안 된 것 같아요: " + error.message + " — supabase_setup.md §1-B SQL을 실행하세요.",
+        true
+      );
+    }
     boards = await loadBoards();
     currentBoardId = defaultId || (boards[0] && boards[0].id) || null;
     renderBoardSelect();
     if (currentBoardId) await switchBoard(currentBoardId);
+    else if (!error) toast("보드를 찾지 못했습니다. DB 설정(§1-B SQL)을 확인하세요.", true);
   }
 
   db.auth.onAuthStateChange(async (event, session) => {
