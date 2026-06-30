@@ -68,7 +68,20 @@
     const email = emailInput.value.trim();
     if (email) signInWithMagicLink(email);
   });
-  logoutBtn.addEventListener("click", () => db.auth.signOut());
+  logoutBtn.addEventListener("click", async () => {
+    logoutBtn.disabled = true;
+    try {
+      // local 스코프: 서버 호출 실패와 무관하게 이 브라우저 세션을 정리
+      const { error } = await db.auth.signOut({ scope: "local" });
+      if (error) console.error("로그아웃 실패:", error);
+    } catch (e) {
+      console.error("로그아웃 예외:", e);
+    } finally {
+      // onAuthStateChange가 안 와도 화면은 무조건 로그아웃 상태로
+      showLoggedOut();
+      logoutBtn.disabled = false;
+    }
+  });
 
   function showLoggedIn(session) {
     authView.hidden = true;
