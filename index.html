@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>칸반 보드</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <header class="app-header">
+    <h1>📋 칸반 보드</h1>
+    <p class="subtitle">카드를 드래그해서 컬럼 사이로 옮겨보세요</p>
+    <div class="user-area" id="user-area" hidden>
+      <span class="user-email" id="user-email"></span>
+      <button type="button" id="logout-btn" class="logout-btn">로그아웃</button>
+    </div>
+  </header>
+
+  <!-- 로그인 뷰 -->
+  <section class="auth-view" id="auth-view" hidden>
+    <div class="auth-card">
+      <h2>로그인</h2>
+      <p class="auth-desc">GitHub 계정 또는 이메일로 시작하세요.</p>
+      <button type="button" class="oauth-btn oauth-github" id="github-btn">
+        <span class="oauth-icon">&#xf09b;</span> GitHub로 계속하기
+      </button>
+
+      <div class="auth-divider"><span>또는 이메일로</span></div>
+
+      <form class="email-form" id="email-form">
+        <input type="email" id="email-input" placeholder="you@example.com"
+               autocomplete="email" required aria-label="이메일 주소" />
+        <button type="submit" class="oauth-btn oauth-email" id="email-btn">
+          매직링크 받기
+        </button>
+      </form>
+
+      <p class="auth-message" id="auth-message"></p>
+    </div>
+  </section>
+
+  <!-- 보드 뷰 -->
+  <main class="board" id="app-view" hidden>
+    <section class="column" data-column="todo">
+      <header class="column-header">
+        <h2>To-Do</h2>
+        <span class="count" data-count>0</span>
+      </header>
+      <div class="cards" data-cards></div>
+      <form class="add-form" data-add-form>
+        <input type="text" placeholder="새 카드 추가…" data-add-input aria-label="To-Do에 카드 추가" />
+        <button type="submit" aria-label="추가">＋</button>
+      </form>
+    </section>
+
+    <section class="column" data-column="in-progress">
+      <header class="column-header">
+        <h2>In-Progress</h2>
+        <span class="count" data-count>0</span>
+      </header>
+      <div class="cards" data-cards></div>
+      <form class="add-form" data-add-form>
+        <input type="text" placeholder="새 카드 추가…" data-add-input aria-label="In-Progress에 카드 추가" />
+        <button type="submit" aria-label="추가">＋</button>
+      </form>
+    </section>
+
+    <section class="column" data-column="done">
+      <header class="column-header">
+        <h2>Done</h2>
+        <span class="count" data-count>0</span>
+      </header>
+      <div class="cards" data-cards></div>
+      <form class="add-form" data-add-form>
+        <input type="text" placeholder="새 카드 추가…" data-add-input aria-label="Done에 카드 추가" />
+        <button type="submit" aria-label="추가">＋</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
