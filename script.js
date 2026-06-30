@@ -6,7 +6,17 @@
   const SUPABASE_URL = "https://xblwokbylvlnwarxzioe.supabase.co";
   const SUPABASE_ANON_KEY =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhibHdva2J5bHZsbndhcnh6aW9lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3NjEzNTgsImV4cCI6MjA5ODMzNzM1OH0.a0rKiBBfhJYtb1thc4xTLQ2in9mfpxsebFOlfVmGXP0";
-  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      // 정적 사이트(GitHub Pages)에 안정적: 토큰을 URL 해시로 바로 받아 code_verifier 교환 불필요.
+      flowType: "implicit",
+      detectSessionInUrl: true,
+      persistSession: true,
+      autoRefreshToken: true,
+      // todo 앱과 같은 프로젝트·같은 origin이라 세션 저장소 키가 겹치지 않도록 분리.
+      storageKey: "kanban-auth-token",
+    },
+  });
 
   // OAuth 로그인 후 돌아올 주소 (Supabase Auth의 Site URL / Redirect URLs에 등록된 값과 일치해야 함)
   const REDIRECT_URL = "https://707extream.github.io/kanban-app/";
